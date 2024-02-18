@@ -6,7 +6,14 @@
         "me-south-1", "me-central-1", "sa-east-1", "us-gov-east-1",
         "us-gov-west-1"
     ],
-    "vpc": {
-        "cc_type_name": "AWS::EC2::VPC"
+    "things": {
+        "vpc": {
+            "cc_type_name": "AWS::EC2::VPC",
+            "default_attrs": ["CidrBlock", "Tags"]
+        },
+        "subnet": {
+            "cc_type_name": "AWS::EC2::Subnet",
+            "default_attrs": ["CidrBlock", "AvailabilityZone", "Tags"]
+        }
     }
 }
