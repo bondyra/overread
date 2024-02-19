@@ -19,7 +19,7 @@ _parser.add_argument("--all", "-a", action="store_true")
 _parser.add_argument("--filter", "-f")  # TODO
 
 
-Input = namedtuple("Input", "module_name module type dimensions display_method")
+Input = namedtuple("Input", "seq module_name module type dimensions display_method")
 
 
 @dataclass
@@ -76,18 +76,18 @@ def _validate_input(args):
 
 
 def _inflate_input(seq, args, _modules):
-    m, t = args.something.split(".")
-    module_pattern = StringOrPattern.from_string(m)
+    *m, t = args.something.split(".")
+    module_patterns = [StringOrPattern.from_string(m)] if m else [StringOrPattern.from_string(_m) for _m in _modules]
     thing_pattern = StringOrPattern.from_string(t)
     dimensions = Vector.from_tuple(args.dimensions.split(".")) if args.dimensions else None
     display_method = DisplayMethod.ALL if args.all else DisplayMethod.MINIMAL if args.minimal else DisplayMethod.DEFAULT
     # display_filter = re.compile(args.filter) if args.filter else None
     for module_name, module in _modules.items():
-        if module_pattern.matches(module_name):
+        if any(p.matches(module_name) for p in module_patterns):
             concrete_types = [t for t in module.thing_types() if thing_pattern.matches(t)]
             concrete_dimensions = [dims for dims in module.dimensions() if dimensions.matches(dims)] if dimensions else [()]
             for ct, cd in itertools.product(concrete_types, concrete_dimensions):
-                yield seq, Input(module_name, module, ct, cd, display_method)
+                yield Input(seq, module_name, module, ct, cd, display_method)
 
 
 def _iter_parts(args):

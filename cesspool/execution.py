@@ -10,8 +10,8 @@ def execute(inputs):
 
 
 async def _match_and_run(inputs):
-    return await asyncio.gather(*(_execute_input(seq, i) for seq, i in inputs.items()))
+    return await asyncio.gather(*(_execute_input(i) for i in inputs))
 
 
-async def _execute_input(seq, i):
-    return Result(seq, i.type, i.dimensions, await i.module.get(i.type, i.dimensions))
+async def _execute_input(i):
+    return Result(i.seq, i.type, i.dimensions, await i.module.get(i.type, i.dimensions))

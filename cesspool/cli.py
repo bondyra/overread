@@ -8,24 +8,20 @@ from cesspool.input import DisplayMethod, get_inputs, Input
 from cesspool.execution import execute, Result
 
 
-# todo: max recursion depth when self-referencing
-# todo: multiple roots doesn't seem to work fine
-
-
 def main():
-    inputs = dict(get_inputs())
+    inputs = list(get_inputs())
     results = list(execute(inputs))
     joined_results = list(process_join(inputs, results))
-    rendered_results = render_results(inputs, joined_results, None)
+    rendered_results = render_results({i.seq: i for i in inputs}, joined_results, None, -1)
     display(rendered_results)
 
 
 def process_join(inputs: Dict[int, Input], results: List[Result]):
     parent_ids = {None}
-    for i in range(len(inputs)):
+    for input in inputs:
         new_parent_ids = set()
         for parent_id in parent_ids:
-            for it in iter_metadata(i, inputs[i], results):
+            for it in iter_metadata(input, results):
                 if not parent_id:  # root
                     yield it
                     new_parent_ids.add(it["id"])  # set a context for next layer
@@ -41,16 +37,16 @@ def process_join(inputs: Dict[int, Input], results: List[Result]):
         parent_ids = new_parent_ids
 
 
-def iter_metadata(seq: int, input: Input, results: List[Result]):
+def iter_metadata(input: Input, results: List[Result]):
     for r in results:
-        if r.seq != seq:
+        if r.seq != input.seq:
             continue
         for id, blob in r.things:
             maybe_obj = try_json(blob)
             dim_names = input.module.get_dimension_names()
             yield {
                 "id": id,
-                "seq": seq,
+                "seq": r.seq,
                 "type": r.type,
                 "data": maybe_obj or blob,
                 **{f"dim_{dim_name or 'dim_' + index}": dim for dim_name, dim, index in itertools.zip_longest(dim_names, r.dimensions, range(len(r.dimensions)))},
@@ -103,16 +99,16 @@ def _get_first_plaintext_match(blob, id):
         return f"{prefix}{id}{suffix}"
 
 
-def render_results(inputs, results, pid):
+def render_results(inputs_dict, results, pid, pseq):
     return {
-        f"{inputs[seq].module_name}.{typ}": {
-            render_id(inputs[seq], r): {
-                **render_obj(inputs[seq], r),
-                **render_results(inputs, results, r["id"])
+        f"{inputs_dict[pseq + 1].module_name}.{typ}": {  # TODO: just a list of render_id if minimal?
+            render_id(inputs_dict[pseq + 1], r): {
+                **render_obj(inputs_dict[pseq + 1], r),
+                **render_results(inputs_dict, results, r["id"], r["seq"])
             }
-            for r in results if r["type"] == typ and r["seq"] == seq and r.get("pid") == pid
+            for r in results if r["type"] == typ and r["seq"] == pseq + 1 and r.get("pid") == pid
         }
-        for typ, seq in set((r["type"], r["seq"]) for r in results if r.get("pid") == pid)
+        for typ in set(r["type"] for r in results if r.get("pid") == pid and r["seq"] == pseq + 1)
     }
 
 
