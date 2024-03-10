@@ -1,5 +1,6 @@
 import itertools
 import json
+import os
 import re
 
 import aioboto3
@@ -15,9 +16,11 @@ _sessions = {}
 
 def _session(dimensions):
     key, profile, region = None, None, None
-    if len(dimensions) == 1:
+    if not dimensions:
+        pass
+    elif len(dimensions) == 1:
         key = profile = dimensions[0]
-    if len(dimensions) == 2:
+    elif len(dimensions) == 2:
         key = profile, region = dimensions
         key = tuple(key)
     if key not in _sessions:
@@ -30,6 +33,7 @@ def _session(dimensions):
     return _sessions[key]
 
 
+# interface member
 async def get(thing_type, dimensions):
     async with _session(dimensions).client("cloudcontrol") as c:
         cloudcontrol_type_name = _config["things"][thing_type]["cc_type_name"]
@@ -48,17 +52,22 @@ async def _get_resources(client, ids, cloudcontrol_type_name):
         yield i, item["ResourceDescription"]["Properties"]
 
 
+# interface member
 def thing_types():
     return list(_config["things"].keys())
 
 
-def dimensions():
+# interface member
+def coordinates():
     return itertools.product(_profiles, _regions)
 
 
-def get_dimension_names():
-    return "profile", "region"
+# interface member
+def default_coordinates():
+    default_session = _session(None)
+    return default_session.profile_name, default_session.region_name
 
 
+# interface member
 def get_default_attrs(thing_type):
     return _config["things"][thing_type].get("default_attrs", None)

@@ -1,4 +1,4 @@
-from cesspool.cli import _tokenize, _reconstruct_jsonpath
+from overread.cli import _tokenize, _reconstruct_jsonpath
 
 
 def test__reconstruct_jsonpath():

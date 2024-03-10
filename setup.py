@@ -1,4 +1,4 @@
-"""Python setup.py for cesspool package"""
+"""Python setup.py for overread package"""
 import io
 import os
 from setuptools import find_packages, setup
@@ -6,7 +6,7 @@ from setuptools import find_packages, setup
 
 def read(*paths, **kwargs):
     """Read the contents of a text file safely.
-    >>> read("cesspool", "VERSION")
+    >>> read("overread", "VERSION")
     '0.1.0'
     >>> read("README.md")
     ...
@@ -30,10 +30,10 @@ def read_requirements(path):
 
 
 setup(
-    name="cesspool",
-    version=read("cesspool", "VERSION"),
-    description="cesspool",
-    url="https://github.com/bondyra/cesspool/",
+    name="overread",
+    version=read("overread", "VERSION"),
+    description="overread",
+    url="https://github.com/bondyra/overread/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="bondyra",
@@ -41,7 +41,7 @@ setup(
     install_requires=read_requirements("requirements.txt"),
     entry_points={
         "console_scripts" : [
-            "cl = cesspool.__main__:main"
+            "ov = overread.__main__:main"
         ]
     },
     extras_require={"test": read_requirements("requirements-test.txt")},
