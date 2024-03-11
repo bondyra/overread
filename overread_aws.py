@@ -1,6 +1,5 @@
 import itertools
 import json
-import os
 import re
 
 import aioboto3
@@ -14,14 +13,14 @@ _regions = _config["_regions"]
 _sessions = {}
 
 
-def _session(dimensions):
+def _session(place):
     key, profile, region = None, None, None
-    if not dimensions:
+    if not place:
         pass
-    elif len(dimensions) == 1:
-        key = profile = dimensions[0]
-    elif len(dimensions) == 2:
-        key = profile, region = dimensions
+    elif len(place) == 1:
+        key = profile = place[0]
+    elif len(place) == 2:
+        key = profile, region = place
         key = tuple(key)
     if key not in _sessions:
         kwargs = {}
@@ -34,8 +33,8 @@ def _session(dimensions):
 
 
 # interface member
-async def get(thing_type, dimensions):
-    async with _session(dimensions).client("cloudcontrol") as c:
+async def get(thing_type, place):
+    async with _session(place).client("cloudcontrol") as c:
         cloudcontrol_type_name = _config["things"][thing_type]["cc_type_name"]
         ids = await _list_ids(c, cloudcontrol_type_name)
         return [item async for item in _get_resources(c, ids, cloudcontrol_type_name)]
@@ -58,16 +57,16 @@ def thing_types():
 
 
 # interface member
-def coordinates():
+def get_default_attrs(thing_type):
+    return _config["things"][thing_type].get("default_attrs", None)
+
+
+# interface member
+def places():
     return itertools.product(_profiles, _regions)
 
 
 # interface member
-def default_coordinates():
+def default_place():
     default_session = _session(None)
     return default_session.profile_name, default_session.region_name
-
-
-# interface member
-def get_default_attrs(thing_type):
-    return _config["things"][thing_type].get("default_attrs", None)

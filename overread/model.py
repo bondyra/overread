@@ -9,75 +9,14 @@ import argparse
 
 
 @dataclass
-class Regex:
-    patterns: List[re.Pattern]
-    string: Optional[str]
-
-    def __str__(self) -> str:
-        if self.string:
-            return self.string
-        if self.patterns:
-            return "|".join(self.patterns)
-        else:
-            return None
-
-    def is_regex(self) -> bool:
-        return any(self.patterns)
-
-    @classmethod
-    def from_string(cls, string: Optional[str]):
-        if not string:
-            return Regex([], None)
-        patterns, string = [re.compile(c.replace("?", ".*")) for c in string.split(",") if "?" in string], None if "?" in string else string
-        return Regex(patterns, string)
-
-    def matches(self, string: str):
-        if self.string:
-            return self.string == string
-        elif any(self.patterns):
-            return any(p.fullmatch(string) for p in self.patterns)
-        return True  # TODO: does it make sense? verify during tests
-
-
-@dataclass
-class Space:
-    _dimension_number_to_regex: Dict[int, Regex]
-    _everything: bool = False
-
-    @classmethod
-    def EVERYTHING(cls):
-        return cls({}, True)
-
-    @classmethod
-    def from_list(cls, dims: List[str]):
-        return Space({index: Regex.from_string(dim) for index, dim in enumerate(dims)})
-
-    @classmethod
-    def from_string(cls, string: str):
-        if string == "?!":
-            return cls.EVERYTHING()
-        return Space.from_list(string.split("."))
-
-    def get_dim_regex(self, index: int):
-        return self._dimension_number_to_regex.get(index, None)
-
-    def has(self, coordinates: List):
-        if self._everything:
-            return True
-        for index, regex in self._dimension_number_to_regex.items():
-            if len(coordinates) > index and not regex.matches(coordinates[index]):
-                return False
-        return True
-
-@dataclass
 class NodeLabel:
     module_name: str
     module: Any
     thing_type: str
-    coordinates: List[str]
+    place: List[str]
 
     def __str__(self):
-        return f"{self.module_name}.{self.thing_type}@{'.'.join(self.coordinates)}"
+        return f"{self.module_name}.{self.thing_type}@{'_'.join(self.place)}"
 
     def __hash__(self) -> int:
         h = hashlib.sha256(self.__str__().encode('utf-8'))
@@ -94,8 +33,8 @@ class DisplayMethod(Enum):
 class NodeDisplay:
     seq: str
     display_method: DisplayMethod
-    blob_filter: Regex
-    id_filter: Regex
+    blob_filter: re.Pattern
+    id_filter: re.Pattern
 
 
 Result = namedtuple("Result", "id blob")
@@ -112,10 +51,10 @@ class Node:
 class Opts:
     _PARSER = None
 
-    mod_to_space: Dict[str, Space]
+    mod_to_space: Dict[str, re.Pattern]
     display_method: DisplayMethod
-    blob_filter: Regex
-    id_filter: Regex
+    blob_filter: re.Pattern
+    id_filter: re.Pattern
 
     @classmethod
     def _add_arguments(cls, parser):
@@ -135,8 +74,8 @@ class Opts:
         args = self._PARSER.parse_args(part)
         self.mod_to_space = dict(self._iter_parsed_spaces(args.spaces))
         self.display_method = DisplayMethod.ALL if args.verbose else DisplayMethod.MINIMAL if args.quiet else DisplayMethod.DEFAULT
-        self.blob_filter = Regex.from_string(args.filter)
-        self.id_filter = Regex.from_string(args.id_filter)
+        self.blob_filter = re.compile(args.filter or ".*")
+        self.id_filter = re.compile(args.id_filter or ".*")
 
     def _iter_parsed_spaces(self, spaces: List[str]):
         discovered_keys = set()
@@ -147,45 +86,43 @@ class Opts:
             if len(parts) == 2:
                 key, val = parts
             else:
-                raise Exception(f"Invalid space spec: {space_kv}! Must be k=s1[,s2,...] or s1[s2,...]")
+                raise Exception(f"Invalid space spec: {space_kv}! Must be MODULE=SPACE_REGEX or SPACE_REGEX")
             if key in discovered_keys:
                 raise Exception(f"Invalid space spec, redefined space for {'module ' + key if key else 'all modules'}!")
             discovered_keys.add(key)
-            yield key, Space.from_string(val)
+            yield key, re.compile(val or "")
 
 
 @dataclass
 class ThingBlueprint:
     module_name: str
     module: Any
-    thing_type: Regex
+    thing_type: re.Pattern
 
     def __init__(self, available_modules, string: str):
         parts = string.split(".")
         if len(parts) == 0 or len(parts) > 2:
             raise Exception(f"Invalid node {string} - must be either [mod].[type|regex] or [type]")
         if len(parts) == 1:
-            self.thing_type = Regex.from_string(parts[0])
-            if self.thing_type.is_regex():
-                raise Exception(f"Invalid node {string}. If you specify a regex for thing type, you must explictly provide a module!")
-            self.module_name = self._find_module_for_type(available_modules, self.thing_type)
+            self.thing_type = re.compile(parts[0])
+            self.module_name = self._find_module(available_modules)
         else:
-            self._module_name, self.thing_type = parts[0], Regex.from_string(parts[1])
+            self._module_name, self.thing_type = parts[0], re.compile(parts[1])
             if self.module_name not in available_modules:
-                raise Exception(f"Unsupported module {self.module_name}. Available ones are: {available_modules.keys()}") 
+                raise Exception(f"Unsupported module {self.module_name}. Available ones are: {available_modules.keys()}")
         self.module = available_modules[self.module_name]
+        if not any(self.thing_type.match(mod_tt) for mod_tt in self.module.thing_types()):
+            raise Exception(f"Thing type {self.module_name} does not have any matches in configured module: {self.module_name}!")
 
-
-    @staticmethod
-    def _find_module_for_type(available_modules: Dict, tt: Regex) -> str:
+    def _find_module(self, available_modules: Dict) -> str:
         module_matches = set()
         for name, mod in available_modules.items():
-            if any(tt.matches(mod_tt) for mod_tt in mod.thing_types()):
+            if any(self.thing_type.match(mod_tt) for mod_tt in mod.thing_types()):
                 module_matches.add(name)
         if len(module_matches) > 1:
-            raise Exception(f"Ambiguous thing type {tt}, found in multiple modules: {module_matches}")
+            raise Exception(f"Thing type {self.thing_type_literal} found in multiple modules: {module_matches}, can proceed only with one!")
         if not module_matches:
-            raise Exception(f"Cannot find thing type {tt} anywhere!")
+            raise Exception(f"Cannot find thing type {self.thing_type_literal} in any of the available modules: {available_modules.keys()}!")
         return module_matches.pop()
 
 
@@ -201,18 +138,18 @@ class NodeBlueprint:
             or self.opts.mod_to_space.get(None)
             or default_opts.mod_to_space.get(self.blueprint.module_name)
             or default_opts.mod_to_space.get(None)
-            or Space.from_list(self.blueprint.module.default_coordinates())
+            or re.compile("_".join(self.blueprint.module.default_place()))
         )
-        concrete_types = [t for t in self.blueprint.module.thing_types() if self.blueprint.thing_type.matches(t)]
-        concrete_coords = [coord for coord in self.blueprint.module.coordinates() if space.has(coord)]
+        concrete_types = [t for t in self.blueprint.module.thing_types() if self.blueprint.thing_type.match(t)]
+        concrete_places = [place for place in self.blueprint.module.places() if space.match("_".join(place))]
 
-        for ct, cc in itertools.product(concrete_types, concrete_coords):
+        for ct, cp in itertools.product(concrete_types, concrete_places):
             yield Node(
                     label=NodeLabel(
                         module_name = self.blueprint.module_name,
                         module = self.blueprint.module,
                         thing_type = ct,
-                        coordinates = cc
+                        place = cp
                     ),
                     display=NodeDisplay(
                         seq = self.seq,
@@ -225,35 +162,29 @@ class NodeBlueprint:
 
 @dataclass
 class LinkOpts:
-    _REGEX = re.compile("(.*)\{(\d+)\}(.*)")
-
     negate: bool
     match_regex: Optional[re.Pattern]
 
     def __init__(self, negate: bool, regex: Optional[str]):
         self.negate = negate
-        self.match_regex = self._parse_regex(regex)
+        self.match_regex = re.compile(regex) if regex else None
 
-    @classmethod
-    def _parse_regex(cls, regex) -> Optional[re.Pattern]:
-        if not regex:
-            return None
-        match_spec = cls._REGEX.match(regex)
-        if not match_spec:
-            raise Exception(f"Invalid link regex: {regex}. Must be in form \"[OPTIONAL_CHARS]{{REQUIRED_INT_LENGTH}}[OPTIONAL_CHARS]\"")
-        return re.compile(f"{match_spec.group(1)}.{{{int(match_spec.group(2))}}}{match_spec.group(3)}")  # no overlaps here!
-
-    def match(self, a: Result, b: Result) -> bool:
+    def match(self, parent: Result, child: Result) -> Optional[Dict]:
         if self.match_regex:
-            a_match = self.match_regex.search(a.blob)
-            if a_match and a_match.group() in b.blob:
-                return not self.negate
-            b_match = self.match_regex.search(b.blob)
-            if b_match and b_match.group() in a.blob:
-                return not self.negate
+            parent_matches = [m for m in set(self.match_regex.findall(parent.blob)) if m in child.blob]
+            if not self.negate and parent_matches:
+                return {"child_has_parent_strings": parent_matches}
+            child_matches = [m for m in set(self.match_regex.findall(child.blob)) if m in parent.blob]
+            if child_matches:
+                return None if self.negate else {"parent_has_child_strings": child_matches}
+            return {"regex_match": False} if self.negate else None
         else:
-            result = a.id in b.blob or b.id in a.blob
-            return not result if self.negate else result
+            parent_id_in_child = parent.id in child.blob
+            child_id_in_parent = child.id in parent.blob
+            if parent_id_in_child or child_id_in_parent:
+                return None if self.negate else {"parent_id_in_child": parent_id_in_child, "child_id_in_parent": child_id_in_parent}
+            else:
+                return {"id_match": False} if self.negate else None
 
 
 @dataclass

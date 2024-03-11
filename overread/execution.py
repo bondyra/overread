@@ -16,4 +16,4 @@ async def _execute_labels(labels: NodeLabel) -> Dict[NodeLabel, List[Result]]:
 
 
 async def _execute_label(label: NodeLabel) -> Tuple[NodeLabel, List[Result]]:
-    return label, [Result(id, blob) for id, blob in await label.module.get(label.thing_type, label.coordinates)]
+    return label, [Result(id, blob) for id, blob in await label.module.get(label.thing_type, label.place)]

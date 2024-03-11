@@ -20,8 +20,8 @@ def render_roots(graph: Graph[Node, LinkOpts]) -> Iterable[Tuple[str, List]]:
 
 
 def render_node(node: Node, graph: Graph[Node, LinkOpts], parent_result_and_link_opts: Optional[Tuple[Result, LinkOpts]]) -> Tuple[str, List]:
-    matching_results = [r for r in node.results if node.display.id_filter.matches(r.id)]
-    matching_results = [r for r in matching_results if node.display.blob_filter.matches(r.blob)]
+    matching_results = [r for r in node.results if node.display.id_filter.match(r.id)]
+    matching_results = [r for r in matching_results if node.display.blob_filter.match(r.blob)]
     if parent_result_and_link_opts:
         matching_results = [r for r in matching_results if parent_result_and_link_opts[1].match(parent_result_and_link_opts[0], r)]
     child_node_and_link_opts_items = [(cn, link_opts) for cid, link_opts in graph.get_children_id_and_edge(node.display.seq) for cn in graph.iter_nodes(cid)]
