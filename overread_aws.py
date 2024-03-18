@@ -35,20 +35,37 @@ def _session(place):
 # interface member
 async def get(thing_type, place):
     async with _session(place).client("cloudcontrol") as c:
-        cloudcontrol_type_name = _config["things"][thing_type]["cc_type_name"]
-        ids = await _list_ids(c, cloudcontrol_type_name)
-        return [item async for item in _get_resources(c, ids, cloudcontrol_type_name)]
+        thing = _config["things"][thing_type]
+        results = await _get(c, thing["cc_type_name"])
+        resource_model = thing.get("resource_model")
+        if resource_model:
+            for i in range(len(results)):
+                new_item = results[i][1]
+                for attr, v in resource_model.items():
+                    new_item[attr] = [
+                        r
+                        for _, r in await _get(
+                            c, v["cc_type_name"], ResourceModel=f'{{"{v["parent_field"]}":"{results[i][0]}"}}'
+                        )
+                    ]
+                results[i] = results[i][0], new_item
+        return results
 
 
-async def _list_ids(client, cloudcontrol_type_name):
-    response = await client.list_resources(TypeName=cloudcontrol_type_name)
-    return [rd["Identifier"] for rd in response.get('ResourceDescriptions', [])]
+async def _get(c, cloudcontrol_type_name, **list_resources_kwargs):
+    ids = await _list_ids(c, cloudcontrol_type_name, **list_resources_kwargs)
+    return [item async for item in _get_resources(c, ids, cloudcontrol_type_name)]
+
+
+async def _list_ids(client, cloudcontrol_type_name, **kwargs):
+    response = await client.list_resources(TypeName=cloudcontrol_type_name, **kwargs)
+    return [rd["Identifier"] for rd in response.get("ResourceDescriptions", [])]
 
 
 async def _get_resources(client, ids, cloudcontrol_type_name):
     for i in ids:
-        item = await client.get_resource(TypeName=cloudcontrol_type_name, Identifier = i)
-        yield i, item["ResourceDescription"]["Properties"]
+        item = await client.get_resource(TypeName=cloudcontrol_type_name, Identifier=i)
+        yield i, json.loads(item["ResourceDescription"]["Properties"])
 
 
 # interface member
@@ -57,8 +74,15 @@ def thing_types():
 
 
 # interface member
-def get_default_attrs(thing_type):
-    return _config["things"][thing_type].get("default_attrs", None)
+def prettify(thing_type, thing):
+    result = {da: thing[da] for da in _config["things"][thing_type].get("default_attrs", []) if da in thing}
+    resource_model = _config["things"][thing_type].get("resource_model")
+    if resource_model:
+        for rm_attr, v in resource_model.items():
+            result[rm_attr] = [
+                {da: thing_it[da] for da in v["default_attrs"] if da in thing_it} for thing_it in thing.get(rm_attr, [])
+            ]
+    return result
 
 
 # interface member

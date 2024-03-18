@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import Dict, List, Tuple
 
 from overread.graph import Graph
@@ -16,4 +17,7 @@ async def _execute_labels(labels: NodeLabel) -> Dict[NodeLabel, List[Result]]:
 
 
 async def _execute_label(label: NodeLabel) -> Tuple[NodeLabel, List[Result]]:
-    return label, [Result(id, blob) for id, blob in await label.module.get(label.thing_type, label.place)]
+    return label, [
+        Result(id, content, json.dumps(content))
+        for id, content in await label.module.get(label.thing_type, label.place)
+    ]

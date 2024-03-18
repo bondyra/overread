@@ -22,5 +22,5 @@ def find_ov_modules() -> Iterable[str]:
     for dir in sys.path:
         yield from {
             os.path.splitext(os.path.basename(full_path))[0]
-            for full_path in glob.glob(os.path.join(dir, 'overread_*.py'))
+            for full_path in glob.glob(os.path.join(dir, "overread_*.py"))
         }

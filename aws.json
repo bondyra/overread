@@ -14,6 +14,17 @@
         "subnet": {
             "cc_type_name": "AWS::EC2::Subnet",
             "default_attrs": ["CidrBlock", "AvailabilityZone", "Tags"]
+        },
+        "rtb": {
+            "cc_type_name": "AWS::EC2::RouteTable",
+            "default_attrs": [],
+            "resource_model": {
+                "routes": {
+                    "cc_type_name": "AWS::EC2::Route",
+                    "parent_field": "RouteTableId",
+                    "default_attrs": ["DestinationCidrBlock", "GatewayId"]
+                }
+            }
         }
     }
 }
