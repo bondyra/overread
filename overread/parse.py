@@ -13,7 +13,7 @@ LINK_DIVIDER = "@"
 DEFAULT_ALIASES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"]
 
 
-async def parse(args: List[str], modules: Dict) -> Graph:
+async def parse(args: List[str], modules: Dict) -> Graph[Node, LinkOpts]:
     global_args, args = _split(args, GLOBALS_NODE_DIVIDER)
     global_opts = parse_global_opts(global_args)
     return await _parse_graph(args, global_opts, modules)

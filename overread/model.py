@@ -4,7 +4,7 @@ from enum import Enum
 import hashlib
 import itertools
 import re
-from typing import Any, AsyncGenerator, Dict, Optional, List
+from typing import Any, AsyncGenerator, Dict, Optional, List, Tuple
 
 
 @dataclass
@@ -13,7 +13,7 @@ class NodeLabel:
     module_name: str
     module: Any
     thing_type: str
-    place: List[str]
+    place: Tuple[str]
 
     def id_string(self):
         return f"{self.module_name}.{self.thing_type} [{self.alias}]"

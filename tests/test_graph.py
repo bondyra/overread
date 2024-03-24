@@ -1,24 +1,23 @@
 from collections import namedtuple
-import pytest
 
 from overread.graph import Graph
 
 
-TestNode = namedtuple("TestNode", ["name", "value"])
-TestEdgeAttrs = namedtuple("TestEdge", ["left", "right"])
+DummyNode = namedtuple("TestNode", ["name", "value"])
+DummyEdgeAttrs = namedtuple("TestEdge", ["left", "right"])
 
 
 def test_graph():
     nodes = {
-        "a": TestNode("a", 1),
-        "b": TestNode("b", 2),
-        "c": TestNode("c", 3),
-        "c1": TestNode("c", 3),
-        "d": TestNode("d", 4),
+        "a": DummyNode("a", 1),
+        "b": DummyNode("b", 2),
+        "c": DummyNode("c", 3),
+        "c1": DummyNode("c", 3),
+        "d": DummyNode("d", 4),
     }
-    edges = {"a/b": TestEdgeAttrs("a", "b"), "b/c": TestEdgeAttrs("b", "c"), "a/c": TestEdgeAttrs("a", "c")}
+    edges = {"a/b": DummyEdgeAttrs("a", "b"), "b/c": DummyEdgeAttrs("b", "c"), "a/c": DummyEdgeAttrs("a", "c")}
 
-    g = Graph[TestNode, TestEdgeAttrs](
+    g = Graph[DummyNode, DummyEdgeAttrs](
         list(nodes.values()), lambda n: n.name, [(e.left, e.right, e) for e in edges.values()]
     )
 
