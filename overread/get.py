@@ -1,11 +1,11 @@
 from overread.execution import execute
 from overread.modules import load_modules
-from overread.simple_render import render
-from overread.parse import parse_graph
+from overread.render import render
+from overread.parse import parse
 
 
-def get(args):
+async def get(args):
     modules = load_modules()
-    graph = parse_graph(args, modules)
-    execute(graph)
+    graph = await parse(args, modules)
+    await execute(graph)
     render(graph)

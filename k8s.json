@@ -1,0 +1,26 @@
+{
+    "things": {
+        "configmap": {
+        },
+        "ep": {
+        },
+        "events": {
+        },
+        "node": {
+            "global": true
+        },
+        "pvc": {
+        },
+        "pv": {
+            "global": true
+        },
+        "pod": {
+        },
+        "secret": {
+        },
+        "sa": {
+        },
+        "service": {
+        }
+    }
+}

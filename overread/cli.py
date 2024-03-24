@@ -1,3 +1,4 @@
+import asyncio
 import sys
 
 from overread.get import get
@@ -9,5 +10,5 @@ def main():
     else:
         cmd = sys.argv[1]
         if cmd == "get":
-            get(sys.argv[2:])
+            asyncio.run(get(sys.argv[2:]))
     return

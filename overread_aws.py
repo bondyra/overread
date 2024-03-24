@@ -5,7 +5,7 @@ import re
 import aioboto3
 
 
-with open("./aws.json", "r") as f:
+with open("aws.json", "r") as f:
     _config = json.loads(f.read())
 with open("/home/tmphome2/.aws/credentials", "r") as f:
     _profiles = re.findall("\[(.*)\]", f.read())
@@ -36,9 +36,9 @@ def _session(place):
 async def get(thing_type, place):
     async with _session(place).client("cloudcontrol") as c:
         thing = _config["things"][thing_type]
-        results = await _get(c, thing["cc_type_name"])
         resource_model = thing.get("resource_model")
         if resource_model:
+            results = await _get(c, thing["cc_type_name"])
             for i in range(len(results)):
                 new_item = results[i][1]
                 for attr, v in resource_model.items():
@@ -48,8 +48,10 @@ async def get(thing_type, place):
                             c, v["cc_type_name"], ResourceModel=f'{{"{v["parent_field"]}":"{results[i][0]}"}}'
                         )
                     ]
-                results[i] = results[i][0], new_item
-        return results
+                yield results[i][0], new_item
+        else:
+            for id, it in await _get(c, thing["cc_type_name"]):
+                yield id, it
 
 
 async def _get(c, cloudcontrol_type_name, **list_resources_kwargs):
@@ -86,8 +88,14 @@ def prettify(thing_type, thing):
 
 
 # interface member
-def places():
-    return itertools.product(_profiles, _regions)
+def color():
+    return "\033[33m"  # foreground yellow
+
+
+# interface member
+async def places():
+    for x in itertools.product(_profiles, _regions):
+        yield x
 
 
 # interface member

@@ -10,11 +10,13 @@ GLOBALS_NODE_DIVIDER = "--"
 NODE_DIVIDER = "+"
 LINK_DIVIDER = "@"
 
+DEFAULT_ALIASES = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"]
 
-def parse_graph(args: List[str], modules: Dict) -> Graph:
+
+async def parse(args: List[str], modules: Dict) -> Graph:
     global_args, args = _split(args, GLOBALS_NODE_DIVIDER)
     global_opts = parse_global_opts(global_args)
-    return _parse_graph(args, global_opts, modules)
+    return await _parse_graph(args, global_opts, modules)
 
 
 def _split(lst: List[str], divider: str) -> Tuple[List[str], List[str]]:
@@ -23,13 +25,13 @@ def _split(lst: List[str], divider: str) -> Tuple[List[str], List[str]]:
     return lst[: lst.index(divider)], lst[(lst.index(divider) + 1) :]
 
 
-def _parse_graph(args, global_opts, modules):
+async def _parse_graph(args, global_opts, modules):
     node_templates = []
     links = []
 
     def _parse_parts(state, parts):
         if state == NODE_DIVIDER:
-            node_templates.append(parse_node_template(parts, modules, str(len(node_templates) + 1)))
+            node_templates.append(parse_node_template(parts, modules, DEFAULT_ALIASES[len(node_templates)]))
         if state == LINK_DIVIDER:
             links.append(parse_link(parts))
 
@@ -47,9 +49,9 @@ def _parse_graph(args, global_opts, modules):
         _parse_parts(state, current_part)
 
     return Graph[Node, LinkOpts](
-        [n for nt in node_templates for n in nt.generate(global_opts)],
-        lambda _: _.label.seq,
-        [(l.left_seq, l.right_seq, l.link_opts) for l in links],
+        [n for nt in node_templates async for n in nt.generate(global_opts)],
+        lambda _: _.label.alias,
+        [(l.left_alias, l.right_alias, l.link_opts) for l in links],
     )
 
 
@@ -63,7 +65,7 @@ global_opts_parser.add_argument("--id-filter", "-i", default="")
 
 def parse_global_opts(args: List[str]) -> GlobalOpts:
     args = global_opts_parser.parse_args(args)
-    mod_to_space = list(_iter_parse_spaces(args.mod_to_space)) if args.mod_to_space else {}
+    mod_to_space = dict(_iter_parse_spaces(args.mod_to_space)) if args.mod_to_space else {}
     display_method = (
         DisplayMethod.ALL if args.verbose else DisplayMethod.MINIMAL if args.quiet else DisplayMethod.DEFAULT
     )
@@ -101,7 +103,7 @@ node_parser.add_argument("--id-filter", "-i", default="")
 node_parser.add_argument("--transparent", "-t", action="store_true")
 
 
-def parse_node_template(parts: List[str], modules: List[str], seq: str) -> NodeTemplate:
+def parse_node_template(parts: List[str], modules: List[str], default_alias: str) -> NodeTemplate:
     args = node_parser.parse_args(parts)
     template = parse_thing_template(args.thing, modules)
     space = re.compile(args.space) if args.space else None
@@ -111,15 +113,14 @@ def parse_node_template(parts: List[str], modules: List[str], seq: str) -> NodeT
     content_filter = re.compile(args.filter or ".*")
     id_filter = re.compile(args.id_filter or ".*")
     return NodeTemplate(
-        alias=args.alias,
-        seq=seq,
+        alias=args.alias or default_alias,
         template=template,
         opts=NodeOpts(space, display_method, content_filter, id_filter, args.transparent),
     )
 
 
 def parse_thing_template(string: str, available_modules) -> ThingTemplate:
-    parts = string.split(".")
+    parts = string.split("_")
     if len(parts) == 0 or len(parts) > 2:
         raise Exception(f"Invalid node {string} - must be either [mod].[type_or_type_regex] or [type_or_type_regex]")
     if len(parts) == 1:
@@ -151,7 +152,7 @@ def _find_module(thing_type_pattern, available_modules: Dict) -> str:
 link_parser = argparse.ArgumentParser(prog="link")
 link_parser.add_argument("link")
 link_parser.add_argument("--regex", "-r")
-link_parser.add_argument("--negate", "-n")
+link_parser.add_argument("--negate", "-n", action="store_true")
 
 
 def parse_link(args: List[str]):

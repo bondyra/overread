@@ -4,26 +4,25 @@ from enum import Enum
 import hashlib
 import itertools
 import re
-from typing import Any, Dict, Iterable, Optional, List
+from typing import Any, AsyncGenerator, Dict, Optional, List
 
 
 @dataclass
 class NodeLabel:
-    alias: Optional[str]
-    seq: Optional[str]
+    alias: str
     module_name: str
     module: Any
     thing_type: str
     place: List[str]
 
-    def display_type(self):
-        return self.alias or f"{self.module_name}.{self.thing_type}"
+    def id_string(self):
+        return f"{self.module_name}.{self.thing_type} [{self.alias}]"
 
-    def display_place(self):
-        return ".".join(self.place)
+    def place_string(self):
+        return "/".join(self.place)
 
     def __str__(self):
-        return f"{self.module_name}.{self.thing_type} ({'.'.join(self.place)})"
+        return f"{self.module_name}.{self.thing_type} ({'#'.join(self.place)})"
 
     def __hash__(self) -> int:
         h = hashlib.sha256(self.__str__().encode("utf-8"))
@@ -81,24 +80,22 @@ class ThingTemplate:
 class NodeTemplate:
     template: ThingTemplate
     opts: NodeOpts
-    seq: str
     alias: Optional[str]
 
-    def generate(self, global_opts: GlobalOpts) -> Iterable[Node]:
+    async def generate(self, global_opts: GlobalOpts) -> AsyncGenerator[Node, None]:
         space = (
             self.opts.space
             or global_opts.mod_to_space.get(self.template.module_name)
             or global_opts.mod_to_space.get(None)
-            or re.compile("_".join(self.template.module.default_place()))
+            or re.compile("/".join(self.template.module.default_place()))
         )
         concrete_types = [t for t in self.template.module.thing_types() if self.template.thing_type_pattern.match(t)]
-        concrete_places = [place for place in self.template.module.places() if space.match("_".join(place))]
+        concrete_places = [place async for place in self.template.module.places() if space.match("/".join(place))]
 
         for ct, cp in itertools.product(concrete_types, concrete_places):
             yield Node(
                 label=NodeLabel(
                     alias=self.alias,
-                    seq=self.seq,
                     module_name=self.template.module_name,
                     module=self.template.module,
                     thing_type=ct,
@@ -112,39 +109,38 @@ class NodeTemplate:
             )
 
 
+Match = namedtuple("Match", "negate matches")
+
+
 @dataclass
 class LinkOpts:
     negate: bool
     match_regex: Optional[re.Pattern]
 
-    def __init__(self, negate: bool, regex: Optional[str]):
+    def __init__(self, negate: bool, regex: Optional[List]):
         self.negate = negate
         self.match_regex = re.compile(regex) if regex else None
 
     def match(self, parent: Result, child: Result) -> Optional[Dict]:
         if self.match_regex:
-            parent_matches = [m for m in set(self.match_regex.findall(parent.blob)) if m in child.blob]
-            if not self.negate and parent_matches:
-                return {"child_has_parent_strings": parent_matches}
-            child_matches = [m for m in set(self.match_regex.findall(child.blob)) if m in parent.blob]
-            if child_matches:
-                return None if self.negate else {"parent_has_child_strings": child_matches}
-            return {"regex_match": False} if self.negate else None
+            matches = [m for m in set(self.match_regex.findall(parent.blob)) if m in child.blob]
+            if not self.negate and matches:
+                return Match(negate=False, matches=matches)
+            return Match(negate=True, matches=matches) if self.negate else None
         else:
-            parent_id_in_child = parent.id in child.blob
-            child_id_in_parent = child.id in parent.blob
-            if parent_id_in_child or child_id_in_parent:
-                return (
-                    None
-                    if self.negate
-                    else {"parent_id_in_child": parent_id_in_child, "child_id_in_parent": child_id_in_parent}
-                )
+            matches = []
+            if parent.id in child.blob:
+                matches.append(parent.id)
+            if child.id in parent.blob:
+                matches.append(child.id)
+            if matches:
+                return None if self.negate else Match(negate=False, matches=matches)
             else:
-                return {"id_match": False} if self.negate else None
+                return Match(negate=True, matches=matches) if self.negate else None
 
 
 @dataclass
 class Link:
-    left_seq: str
-    right_seq: str
+    left_alias: str
+    right_alias: str
     link_opts: Optional[LinkOpts]
