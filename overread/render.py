@@ -16,7 +16,11 @@ RenderedResult = namedtuple("RenderedResult", ["id", "color", "match", "content"
 
 
 def render(graph: Graph[Node, LinkOpts]):
-    print_nodes(list(render_graph(graph)))
+    print_nodes(render_obj(graph))
+
+
+def render_obj(graph: Graph[Node, LinkOpts]):
+    return list(render_graph(graph))
 
 
 def render_graph(graph: Graph[Node, LinkOpts]) -> Iterable[RenderedNode]:
@@ -29,7 +33,7 @@ def render_graph(graph: Graph[Node, LinkOpts]) -> Iterable[RenderedNode]:
 
 def render_node(node: Node, graph: Graph[Node, LinkOpts], ctx: Optional[LinkContext]) -> RenderedNode:
     results = (
-        r for r in node.results if node.display.content_filter.match(r.blob) and node.display.id_filter.match(r.blob)
+        r for r in node.results if node.display.content_filter.search(r.blob) and node.display.id_filter.search(r.id)
     )
     child_linked_nodes = [LinkedNode(c, link_opts) for c, link_opts in graph.get_children_with_edge_attrs(node)]
     result_matches = (

@@ -9,11 +9,11 @@
     "things": {
         "vpc": {
             "cc_type_name": "AWS::EC2::VPC",
-            "default_attrs": ["CidrBlock", "Tags"]
+            "default_attrs": ["CidrBlock"]
         },
         "subnet": {
             "cc_type_name": "AWS::EC2::Subnet",
-            "default_attrs": ["CidrBlock", "AvailabilityZone", "Tags"]
+            "default_attrs": ["CidrBlock", "AvailabilityZone"]
         },
         "rtb": {
             "cc_type_name": "AWS::EC2::RouteTable",
@@ -25,6 +25,10 @@
                     "default_attrs": ["DestinationCidrBlock", "GatewayId"]
                 }
             }
+        },
+        "sg": {
+            "cc_type_name": "AWS::EC2::SecurityGroup",
+            "default_attrs": ["GroupName", "SecurityGroupIngress", "SecurityGroupEgress"]
         }
     }
 }

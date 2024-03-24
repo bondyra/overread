@@ -17,7 +17,7 @@ async def get(thing_type, place):
     kwargs = {} if namespace == "global" else {"namespace": namespace}
     async with await config.new_client_from_config(context=ctx) as api:
         client = await DynamicClient(api)
-        v1 = await client.resources.get(api_version="v1", kind=thing_type.capitalize())
+        v1 = await client.resources.get(api_version="v1", kind=thing["kind"])
         response = await v1.get(**kwargs)
         for item in response.items:
             yield item.metadata.name, item.to_dict()
@@ -28,31 +28,22 @@ def thing_types():
     return list(_config["things"].keys())
 
 
-DEFAULT_METADATA = {"creation_timestamp", "labels", "annotations"}
-DEFAULT_SPEC = {}
-DEFAULT_STATUS = {"phase"}
+DEFAULT_ATTRS = [["metadata", "creation_timestamp", "labels", "annotations"]]
 
 
 # interface member
 def prettify(thing_type, thing):
     config = _config["things"][thing_type]
-    return {
-        "metadata": {
-            k: v
-            for k, v in thing.get("metadata", {}).items()
-            if (k in DEFAULT_METADATA or k in config.get("default_metadata", {})) and v
-        },
-        "spec": {
-            k: v
-            for k, v in thing.get("spec", {}).items()
-            if (k in DEFAULT_SPEC or k in config.get("default_spec", {})) and v
-        },
-        "status": {
-            k: v
-            for k, v in thing.get("status", {}).items()
-            if (k in DEFAULT_STATUS or k in config.get("default_status", {})) and v
-        },
-    }
+    defaults = config.get("default_attrs") or DEFAULT_ATTRS
+    result = {}
+    for d in defaults:
+        attr, *nested = d
+        if not nested and thing.get(attr):
+            result[attr] = thing[attr]
+        for n in nested or []:
+            if n in result.get(attr, {}):
+                result.setdefault(attr,{})[nested] = thing[attr][n]
+    return result
 
 
 # interface member

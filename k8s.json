@@ -1,26 +1,37 @@
 {
     "things": {
-        "configmap": {
+        "cm": {
+            "kind": "ConfigMap",
+            "default_attrs": [["metadata", "labels"], ["data"]]
         },
         "ep": {
+            "kind": "Endpoints"
         },
-        "events": {
+        "event": {
+            "kind": "Event"
         },
         "node": {
+            "kind": "Node",
             "global": true
         },
         "pvc": {
+            "kind": "PersistentVolumeClaim"
         },
         "pv": {
+            "kind": "PersistentVolume",
             "global": true
         },
         "pod": {
+            "kind": "Pod"
         },
         "secret": {
+            "kind": "Secret"
         },
         "sa": {
+            "kind": "ServiceAccount"
         },
         "service": {
+            "kind": "Service"
         }
     }
 }
