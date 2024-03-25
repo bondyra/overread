@@ -1,5 +1,6 @@
 import itertools
 import json
+import os
 import re
 
 import aioboto3
@@ -7,7 +8,7 @@ import aioboto3
 
 with open("aws.json", "r") as f:
     _config = json.loads(f.read())
-with open("/home/tmphome2/.aws/credentials", "r") as f:
+with open(f"{os.environ['HOME']}/.aws/credentials", "r") as f:
     _profiles = re.findall("\[(.*)\]", f.read())
 _regions = _config["_regions"]
 _sessions = {}
