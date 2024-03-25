@@ -7,6 +7,7 @@ from typing import Dict, Iterable
 
 def load_modules() -> Dict:
     def _load_modules():
+        sys.path += [os.path.join(os.path.dirname(os.path.realpath(__file__)), "builtin_modules")]
         if os.getenv("OVERREAD_MODULE_PATHS"):
             module_paths = os.environ["OVERREAD_MODULE_PATHS"].split(",")
             sys.path += module_paths
