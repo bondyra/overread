@@ -6,7 +6,7 @@ import re
 import aioboto3
 
 
-with open("aws.json", "r") as f:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "aws.json"), "r") as f:
     _config = json.loads(f.read())
 with open(f"{os.environ['HOME']}/.aws/credentials", "r") as f:
     _profiles = re.findall("\[(.*)\]", f.read())

@@ -1,10 +1,11 @@
 import json
+import os
 
 from kubernetes_asyncio import client, config
 from kubernetes_asyncio.dynamic import DynamicClient
 
 
-with open("k8s.json", "r") as f:
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "k8s.json"), "r") as f:
     _config = json.loads(f.read())
 
 

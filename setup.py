@@ -35,7 +35,9 @@ setup(
     long_description_content_type="text/markdown",
     author="bondyra",
     packages=find_packages(exclude=["tests", ".github"]),
-    install_requires=read_requirements("requirements.txt"),
+    package_data={
+        'overread': ['builtin_modules/*'],
+    },
     entry_points={"console_scripts": ["ov = overread.__main__:main"]},
     extras_require={"test": read_requirements("requirements-test.txt")},
 )
