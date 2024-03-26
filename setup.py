@@ -5,10 +5,11 @@ import os
 from setuptools import find_packages, setup
 
 
+__version__ = "0.2.1"
+
+
 def read(*paths, **kwargs):
-    """Read the contents of a text file safely.
-    >>> read("overread", "VERSION")
-    '0.1.0'
+    """Read the contents of a text file safely
     >>> read("README.md")
     ...
     """
@@ -28,7 +29,7 @@ def read_requirements(path):
 
 setup(
     name="overread",
-    version=read("overread", "VERSION"),
+    version=__version__,
     description="overread",
     url="https://github.com/bondyra/overread/",
     long_description=read("README.md"),

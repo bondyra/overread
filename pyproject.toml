@@ -1,2 +1,4 @@
 [tool.semantic_release]
-build_command = "pip install wheel && python setup.py sdist bdist_wheel"
+build_command = "python setup.py bdist_wheel"
+version_variable = ["setup.py:__version__"]
+publish = "dist/*"
