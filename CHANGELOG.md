@@ -2,6 +2,13 @@
 
 
 
+## v0.2.1 (2024-03-26)
+
+### Fix
+
+* fix: Fix semantic release ([`c3795e1`](https://github.com/bondyra/overread/commit/c3795e10a8c75a623384f4f604392a4e23922423))
+
+
 ## v0.2.0 (2024-03-26)
 
 ### Feature
