@@ -7,27 +7,92 @@
     ],
     "things": {
         "vpc": {
-            "cc_type_name": "AWS::EC2::VPC",
-            "default_attrs": ["CidrBlock"]
+            "client": "ec2",
+            "method": "describe_vpcs",
+            "field": "Vpcs",
+            "id": "VpcId",
+            "defaults": [
+                "AvailabilityZone", "CidrBlock"
+            ]
         },
         "subnet": {
-            "cc_type_name": "AWS::EC2::Subnet",
-            "default_attrs": ["CidrBlock", "AvailabilityZone"]
+            "client": "ec2",
+            "method": "describe_subnets",
+            "field": "Subnets",
+            "id": "SubnetId",
+            "defaults": [
+                "AvailabilityZone", "CidrBlock"
+            ]
         },
         "rtb": {
-            "cc_type_name": "AWS::EC2::RouteTable",
-            "default_attrs": [],
-            "resource_model": {
-                "routes": {
-                    "cc_type_name": "AWS::EC2::Route",
-                    "parent_field": "RouteTableId",
-                    "default_attrs": ["DestinationCidrBlock", "GatewayId"]
-                }
-            }
+            "client": "ec2",
+            "method": "describe_route_tables",
+            "field": "RouteTables",
+            "id": "RouteTableId",
+            "defaults": [
+                "Routes"
+            ]
         },
         "sg": {
-            "cc_type_name": "AWS::EC2::SecurityGroup",
-            "default_attrs": ["GroupName", "SecurityGroupIngress", "SecurityGroupEgress"]
+            "client": "ec2",
+            "method": "describe_security_groups",
+            "field": "SecurityGroups",
+            "id": "GroupId",
+            "defaults": [
+                "GroupName", "IpPermissions"
+            ]
+        },
+        "igw": {
+            "client": "ec2",
+            "method": "describe_internet_gateways",
+            "field": "InternetGateways",
+            "id": "InternetGatewayId",
+            "defaults": [
+                "Attachments"
+            ]
+        },
+        "nat": {
+            "client": "ec2",
+            "method": "describe_nat_gateways",
+            "field": "NatGateways",
+            "id": "NatGatewayId",
+            "defaults": []
+        },
+        "eip": {
+            "client": "ec2",
+            "method": "describe_addresses",
+            "field": "Addresses",
+            "id": "AllocationId",
+            "defaults": [
+                "PublicIp"
+            ]
+        },
+        "eni": {
+            "client": "ec2",
+            "method": "describe_network_interfaces",
+            "field": "NetworkInterfaces",
+            "id": "NetworkInterfaceId",
+            "defaults": [
+                "PrivateIpAddresses", "Association"
+            ]
+        },
+        "vpc_peering": {
+            "client": "ec2",
+            "method": "describe_vpc_peering_connections",
+            "field": "VpcPeeringConnections",
+            "id": "VpcPeeringConnectionId",
+            "defaults": [
+                "AccepterVpcInfo", "RequesterVpcInfo"
+            ]
+        },
+        "nacl": {
+            "client": "ec2",
+            "method": "describe_network_acls",
+            "field": "NetworkAcls",
+            "id": "NetworkAclId",
+            "defaults": [
+                "Entries", "IsDefault"
+            ]
         }
     }
 }
