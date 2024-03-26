@@ -2,6 +2,23 @@
 
 
 
+## v0.2.0 (2024-03-26)
+
+### Feature
+
+* feat: Release wheels ([`a4cf7f3`](https://github.com/bondyra/overread/commit/a4cf7f3d1b99f92e4a9d670cbb8c20221c3bb200))
+
+* feat: Fix module imports ([`948623a`](https://github.com/bondyra/overread/commit/948623aff23876d7fed74e224a71c9b117bb7610))
+
+### Fix
+
+* fix: Speed up AWS module by moving away from cloudcontrol ([`4d7524d`](https://github.com/bondyra/overread/commit/4d7524dec200bb41836010ee937120bba72eb162))
+
+* fix: Point to proper aws credentials path ([`d3f9dd4`](https://github.com/bondyra/overread/commit/d3f9dd4640a01d0cf1c5a84a405a71df1b18c5bd))
+
+* fix: Remove govcloud from aws region list ([`37ccb28`](https://github.com/bondyra/overread/commit/37ccb286fed2e5272341db007a74314912f8f3a9))
+
+
 ## v0.1.0 (2024-03-25)
 
 ### Feature
