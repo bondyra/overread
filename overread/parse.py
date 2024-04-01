@@ -120,7 +120,7 @@ def parse_node_template(parts: List[str], modules: List[str], default_alias: str
 
 
 def parse_thing_template(string: str, available_modules) -> ThingTemplate:
-    parts = string.split(".")
+    parts = string.split("/")
     if len(parts) == 0 or len(parts) > 2:
         raise Exception(f"Invalid node {string} - must be either [mod].[type_or_type_regex] or [type_or_type_regex]")
     if len(parts) == 1:

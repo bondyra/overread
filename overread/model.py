@@ -16,7 +16,7 @@ class NodeLabel:
     place: Tuple[str]
 
     def id_string(self):
-        return f"{self.module_name}.{self.thing_type} [{self.alias}]"
+        return f"{self.module_name}/{self.thing_type} [{self.alias}]"
 
     def place_string(self):
         return "/".join(self.place)
