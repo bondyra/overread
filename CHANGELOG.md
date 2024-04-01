@@ -2,6 +2,13 @@
 
 
 
+## v0.0.6 (2024-04-02)
+
+### Fix
+
+* fix: Invalid name in internal models ([`4b8e2d5`](https://github.com/bondyra/overread/commit/4b8e2d5cbb2eea9ae4889396b03c7918dd26c5ee))
+
+
 ## v0.0.5 (2024-04-02)
 
 ### Fix
