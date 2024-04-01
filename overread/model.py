@@ -121,7 +121,7 @@ class LinkOpts:
     negate: bool
     text: Optional[str]
 
-    def __init__(self, negate: bool, text: Optional[List]):
+    def __init__(self, negate: bool, text: Optional[str]):
         self.negate = negate
         self.text = text
 

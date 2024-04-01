@@ -160,4 +160,4 @@ def parse_link(args: List[str]):
     if "/" not in args.link:
         raise Exception(f"Invalid link {args.link} - must be of form [parent]/[child]")
     left, right = args.link.split("/")
-    return Link(left, right, LinkOpts(args.negate, re.compile(args.text) if args.text else None))
+    return Link(left, right, LinkOpts(args.negate, args.text))
