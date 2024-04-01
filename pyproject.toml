@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "overread"
+version = "0.0.0"
+description = ""
+authors = ["Jakub Bondyra"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+ov = 'overread.__main__:main'
+
+[tool.poetry.dependencies]
+python = "^3.8"
+aioboto3 = "^12.3.0"
+kubernetes-asyncio = "^29.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.semantic_release]
+version_variable = [
+    "overread/__init__.py:__version__",
+    "pyproject.toml:version"
+]
+branch = "master"
+upload_to_pypi = false
+upload_to_release = true
+build_command = "pip install poetry && poetry build"
