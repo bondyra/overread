@@ -11,7 +11,7 @@ LinkContext = namedtuple("LinkContext", ["parent", "link_opts"])
 ResultMatch = namedtuple("ResultMatch", ["result", "match"])
 
 RenderedNode = namedtuple("RenderedNode", ["uuid", "meta", "results"])
-RenderedMeta = namedtuple("RenderedMeta", ["id", "place", "color", "type", "negate", "match_regex"])
+RenderedMeta = namedtuple("RenderedMeta", ["id", "place", "color", "type", "negate", "match_text"])
 RenderedResult = namedtuple("RenderedResult", ["id", "color", "match", "content", "child_nodes"])
 
 
@@ -48,8 +48,8 @@ def render_node(node: Node, graph: Graph[Node, LinkOpts], ctx: Optional[LinkCont
             color=node.label.module.color(),
             type="linked" if ctx and ctx.link_opts else "root",
             negate=ctx.link_opts.negate if ctx and ctx.link_opts else None,
-            match_regex=(
-                str(ctx.link_opts.match_regex.pattern) if ctx and ctx.link_opts and ctx.link_opts.match_regex else None
+            match_text=(
+                str(ctx.link_opts.text.pattern) if ctx and ctx.link_opts and ctx.link_opts.text else None
             ),
         ),
         results=[render_result(r, graph, node, child_linked_nodes) for r in result_matches if r.match],
@@ -95,7 +95,7 @@ def print_nodes(nodes: List[RenderedNode], prefix=""):
         elif n.meta.type == "linked":
             place = f"in {n.meta.place}"
             link = (
-                f"{'not' if n.meta.negate else ''}{f'like /{n.meta.match_regex}/' if n.meta.match_regex else 'by id'}"
+                f"{'not' if n.meta.negate else ''}{f'contains "{n.meta.match_text}"' if n.meta.match_text else 'by id'}"
             )
             nomatch, nomatch_color = (_colored(" <no match>", C_FG_RED, C_DIM), [C_DIM]) if not n.results else ("", [])
             print(
