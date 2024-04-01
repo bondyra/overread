@@ -2,6 +2,13 @@
 
 
 
+## v0.0.1 (2024-04-02)
+
+### Fix
+
+* fix: Replace invalid resource type delimiter ([`a38fd22`](https://github.com/bondyra/overread/commit/a38fd22cb85b26f09793764ab05d74fc4e9765f4))
+
+
 ## v0.0.0 (2024-04-01)
 
 ### Unknown
