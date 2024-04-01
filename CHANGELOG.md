@@ -2,6 +2,13 @@
 
 
 
+## v0.0.2 (2024-04-02)
+
+### Fix
+
+* fix: Global opts ([`abc4bb7`](https://github.com/bondyra/overread/commit/abc4bb78282b59f5d25df724ea38294a2317234c))
+
+
 ## v0.0.1 (2024-04-02)
 
 ### Fix
