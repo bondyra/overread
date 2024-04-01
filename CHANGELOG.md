@@ -2,6 +2,13 @@
 
 
 
+## v0.0.7 (2024-04-02)
+
+### Fix
+
+* fix: Invalid text match type ([`22e5552`](https://github.com/bondyra/overread/commit/22e555255ddb57319289b1dd76b219ef00f924e2))
+
+
 ## v0.0.6 (2024-04-02)
 
 ### Fix
