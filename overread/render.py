@@ -95,7 +95,7 @@ def print_nodes(nodes: List[RenderedNode], prefix=""):
         elif n.meta.type == "linked":
             place = f"in {n.meta.place}"
             link = (
-                f"{'not' if n.meta.negate else ''}{f'contains \"{n.meta.match_text}\"' if n.meta.match_text else 'by id'}"
+                'not' if n.meta.negate else '' + f'contains "{n.meta.match_text}"' if n.meta.match_text else 'by id'
             )
             nomatch, nomatch_color = (_colored(" <no match>", C_FG_RED, C_DIM), [C_DIM]) if not n.results else ("", [])
             print(
