@@ -102,7 +102,11 @@ class NodeTemplate:
                     place=cp,
                 ),
                 display=NodeDisplay(
-                    display_method=self.opts.display_method or global_opts.display_method,
+                    display_method=(
+                        global_opts.display_method 
+                        if global_opts.display_method != DisplayMethod.DEFAULT
+                        else self.opts.display_method
+                    ),
                     content_filter=self.opts.content_filter or global_opts.content_filter,
                     id_filter=self.opts.id_filter or global_opts.id_filter,
                 ),
