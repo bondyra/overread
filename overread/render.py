@@ -49,7 +49,7 @@ def render_node(node: Node, graph: Graph[Node, LinkOpts], ctx: Optional[LinkCont
             type="linked" if ctx and ctx.link_opts else "root",
             negate=ctx.link_opts.negate if ctx and ctx.link_opts else None,
             match_text=(
-                str(ctx.link_opts.text.pattern) if ctx and ctx.link_opts and ctx.link_opts.text else None
+                ctx.link_opts.text if ctx and ctx.link_opts and ctx.link_opts.text else None
             ),
         ),
         results=[render_result(r, graph, node, child_linked_nodes) for r in result_matches if r.match],
