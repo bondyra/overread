@@ -9,7 +9,6 @@ with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "k8s.json"),
     _config = json.loads(f.read())
 
 
-# interface member
 async def get(thing_type, place):
     ctx, namespace = place
     thing = _config["things"][thing_type]
@@ -24,36 +23,15 @@ async def get(thing_type, place):
             yield item.metadata.name, item.to_dict()
 
 
-# interface member
-def thing_types():
+def whats():
     return list(_config["things"].keys())
 
 
-DEFAULT_ATTRS = [["metadata", "creation_timestamp", "labels", "annotations"]]
-
-
-# interface member
-def prettify(thing_type, thing):
-    config = _config["things"][thing_type]
-    defaults = config.get("default_attrs") or DEFAULT_ATTRS
-    result = {}
-    for d in defaults:
-        attr, *nested = d
-        if not nested and thing.get(attr):
-            result[attr] = thing[attr]
-        for n in nested or []:
-            if n in result.get(attr, {}):
-                result.setdefault(attr,{})[nested] = thing[attr][n]
-    return result
-
-
-# interface member
 def color():
-    return "\033[34m"  # blue
+    return "blue"
 
 
-# interface member
-async def places():
+async def wheres():
     contexts, _ = config.list_kube_config_contexts()
     for ctx in contexts:
         async with await config.new_client_from_config(context=ctx["name"]) as api:
@@ -63,7 +41,6 @@ async def places():
             yield ctx["name"], "global"
 
 
-# interface member
-def default_place():
+def default_where():
     _, default_context = config.list_kube_config_contexts()
     return default_context["name"], default_context["context"].get("namespace", "default")

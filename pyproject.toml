@@ -5,13 +5,11 @@ description = ""
 authors = ["Jakub Bondyra"]
 readme = "README.md"
 
-[tool.poetry.scripts]
-ov = 'overread.__main__:main'
-
 [tool.poetry.dependencies]
 python = "^3.8"
 aioboto3 = "^12.3.0"
 kubernetes-asyncio = "^29.0.0"
+textual = "^0.56.0"
 
 [build-system]
 requires = ["poetry-core"]

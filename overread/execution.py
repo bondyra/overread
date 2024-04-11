@@ -3,7 +3,6 @@ from datetime import datetime, date
 import json
 from typing import Dict, List, Tuple
 
-from overread.graph import Graph
 from overread.model import Link, Node, NodeLabel, Result
 
 

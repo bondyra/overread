@@ -1,0 +1,114 @@
+* {
+    transition: background 500ms in_out_cubic, color 500ms in_out_cubic;
+}
+
+Screen {
+    layers: base overlay notes notifications;
+    overflow: hidden;
+    &:inline {
+        height: 50vh;
+    }
+}
+
+ResourceData {
+    overflow: auto auto;
+}
+
+Notification {
+    dock: bottom;
+    layer: notification;
+    width: auto;
+    margin: 2 4;
+    padding: 1 2;
+    background: $background;
+    color: $text;
+    height: auto;
+}
+
+Body {
+    height: 100%;
+    overflow-y: scroll;
+    width: 100%;
+    background: $surface;
+}
+
+Screen>Container {
+    height: 100%;
+    overflow: hidden;
+}
+
+Section {
+    height: auto;
+    min-width: 40;
+    margin: 1 2 4 2;
+}
+
+ElementContainer {
+    border: solid;
+}
+
+Vertex {
+    height: 14;
+    width: 24;
+    margin: 0 10;
+}
+
+ResourceData {
+    height: auto;
+    width: auto;
+}
+
+Input {
+    background: $boost;
+    color: $text;
+    padding: 0 0;
+    border: solid $background;
+    width: 100%;
+    height: 3;
+}
+
+Input:focus {
+    border: tall $accent;
+}
+
+Input>.input--cursor {
+    background: $surface;
+    color: $text;
+    text-style: reverse;
+}
+
+Input>.input--placeholder, Input>.input--suggestion {
+    color: $text-disabled;
+}
+
+Input.-invalid {
+    border: tall $error 60%;
+}
+
+Input.-invalid:focus {
+    border: tall $error;
+}
+
+.pad {
+    margin: 1 0;
+}
+
+Message {
+    margin: 0 1;
+
+}
+
+Tree {
+    margin: 1 0;
+}
+
+Window {
+    background: $boost;
+    overflow: auto;
+    height: auto;
+    max-height: 16;
+}
+
+Window>Static {
+    width: auto;
+}

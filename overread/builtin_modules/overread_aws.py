@@ -33,7 +33,6 @@ def _session(place):
     return _sessions[key]
 
 
-# interface member
 async def get(thing_type, place):
     thing = _config["things"][thing_type]
     
@@ -43,28 +42,19 @@ async def get(thing_type, place):
             yield item[thing["id"]], item
 
 
-# interface member
-def thing_types():
+def whats():
     return list(_config["things"].keys())
 
 
-# interface member
-def prettify(thing_type, thing):
-    return {da: thing[da] for da in _config["things"][thing_type].get("defaults", []) if da in thing}
-
-
-# interface member
 def color():
-    return "\033[33m"  # foreground yellow
+    return "orange"
 
 
-# interface member
-async def places():
+async def wheres():
     for x in itertools.product(_profiles, _regions):
         yield x
 
 
-# interface member
-def default_place():
+def default_where():
     default_session = _session(None)
     return default_session.profile_name, default_session.region_name
